@@ -31,6 +31,10 @@ is_tty() {
   [[ -t 0 && -t 1 ]]
 }
 
+lower() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
 validate_port() {
   local port="$1"
   [[ "${port}" =~ ^[0-9]+$ ]] || err "Invalid port: ${port}"
@@ -104,7 +108,7 @@ install_codex_if_needed() {
 }
 
 normalize_codex_auth_method() {
-  case "${1,,}" in
+  case "$(lower "$1")" in
     1|login|browser|chatgpt|codex)
       printf '1'
       ;;
@@ -138,7 +142,13 @@ setup_codex_auth() {
     read -r -p "Choose 1 or 2: " setup_choice
   fi
 
-  [[ "${setup_choice}" == "1" || "${setup_choice,,}" == "yes" ]] || return 0
+  case "$(lower "${setup_choice}")" in
+    1|yes)
+      ;;
+    *)
+      return 0
+      ;;
+  esac
 
   install_codex_if_needed || return 0
 
@@ -304,7 +314,7 @@ approve_pending_device_if_requested() {
   if [[ "${approve}" == "ask" ]]; then
     echo
     ask_yes_no "Approve the first pending device automatically? (y/N):" "N" || return 0
-  elif [[ ! "${approve,,}" =~ ^(1|true|yes|y)$ ]]; then
+  elif [[ ! "${approve}" =~ ^(1|true|yes|y)$ ]]; then
     return 0
   fi
 
@@ -321,8 +331,9 @@ approve_pending_device_if_requested() {
 }
 
 wait_for_and_approve_device() {
-  local approve="${AUTO_APPROVE_DEVICE,,}"
+  local approve
   local request_id=""
+  approve="$(lower "${AUTO_APPROVE_DEVICE}")"
 
   if [[ ! "${approve}" =~ ^(1|true|yes|y|ask)$ ]]; then
     return 0
