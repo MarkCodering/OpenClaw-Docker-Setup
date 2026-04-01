@@ -1,6 +1,6 @@
 # OpenClaw Docker Setup
 
-This repo provides a single setup script for running OpenClaw in Docker with the gateway exposed on the host and the Control UI configured for local access.
+This repo provides Bash and PowerShell setup scripts for running OpenClaw in Docker with the gateway exposed on the host and the Control UI configured for local access.
 
 The script is intended to reduce the common friction points:
 
@@ -14,6 +14,8 @@ The script is intended to reduce the common friction points:
 ## Files
 
 - [openclaw_setup.sh](/Users/mark/Documents/Dev/OpenClaw-Docker-Setup/openclaw_setup.sh)
+- [scripts/openclaw_setup.sh](/Users/mark/Documents/Dev/OpenClaw-Docker-Setup/scripts/openclaw_setup.sh)
+- [scripts/openclaw_setup.ps1](/Users/mark/Documents/Dev/OpenClaw-Docker-Setup/scripts/openclaw_setup.ps1)
 
 ## Prerequisites
 
@@ -23,10 +25,22 @@ The script is intended to reduce the common friction points:
 
 ## Quick Start
 
-Run the script:
+Run the Bash version:
+
+```bash
+bash scripts/openclaw_setup.sh
+```
+
+The compatibility wrapper still works:
 
 ```bash
 bash openclaw_setup.sh
+```
+
+Run the PowerShell version:
+
+```powershell
+pwsh -File .\scripts\openclaw_setup.ps1
 ```
 
 By default it will:
@@ -73,6 +87,7 @@ You can override the defaults with environment variables.
 | `CODEX_AUTH_METHOD` | `ask` | `login`, `api-key`, `skip`, or the numeric equivalents `1`, `2`, `3` |
 | `CODEX_API_KEY` | inherits `OPENAI_API_KEY` | API key passed to `codex login --with-api-key` |
 | `WAIT_TIMEOUT_SECONDS` | `120` | Shared timeout for readiness and token/device waits |
+| `PULL_IMAGE_IF_MISSING` | `true` | pull the Docker image automatically when it is not present locally |
 
 Example with custom ports and data path:
 
@@ -80,7 +95,7 @@ Example with custom ports and data path:
 HOST_PORT_GATEWAY=28889 \
 HOST_PORT_BROWSER=28891 \
 DATA_DIR="$HOME/.local/share/openclaw" \
-bash openclaw_setup.sh
+bash scripts/openclaw_setup.sh
 ```
 
 Example non-interactive run:
@@ -88,7 +103,7 @@ Example non-interactive run:
 ```bash
 SETUP_CODEX_AUTH=no \
 AUTO_APPROVE_DEVICE=true \
-bash openclaw_setup.sh
+bash scripts/openclaw_setup.sh
 ```
 
 Example with API-key auth:
@@ -97,13 +112,13 @@ Example with API-key auth:
 SETUP_CODEX_AUTH=yes \
 CODEX_AUTH_METHOD=api-key \
 CODEX_API_KEY=your_key_here \
-bash openclaw_setup.sh
+bash scripts/openclaw_setup.sh
 ```
 
 Example with Codex auth skipped entirely:
 
 ```bash
-SETUP_CODEX_AUTH=skip bash openclaw_setup.sh
+SETUP_CODEX_AUTH=skip bash scripts/openclaw_setup.sh
 ```
 
 ## Codex Auth Options
@@ -119,15 +134,15 @@ You can:
 Examples:
 
 ```bash
-SETUP_CODEX_AUTH=skip bash openclaw_setup.sh
+SETUP_CODEX_AUTH=skip bash scripts/openclaw_setup.sh
 ```
 
 ```bash
-SETUP_CODEX_AUTH=yes CODEX_AUTH_METHOD=login bash openclaw_setup.sh
+SETUP_CODEX_AUTH=yes CODEX_AUTH_METHOD=login bash scripts/openclaw_setup.sh
 ```
 
 ```bash
-SETUP_CODEX_AUTH=yes CODEX_AUTH_METHOD=api-key CODEX_API_KEY=your_key_here bash openclaw_setup.sh
+SETUP_CODEX_AUTH=yes CODEX_AUTH_METHOD=api-key CODEX_API_KEY=your_key_here bash scripts/openclaw_setup.sh
 ```
 
 If you use another provider, the practical requirement is that the Codex CLI accepts the credentials you supply. This README does not assume direct GitHub Copilot support. If you have a compatible key or proxy setup that works with the Codex CLI, pass the key through `CODEX_API_KEY` and keep any provider-specific endpoint configuration in your shell environment.
@@ -197,5 +212,6 @@ If the script cannot print a tokenized URL:
 ## Notes
 
 - The script is designed for local Docker-based use.
-- It does not currently pull the image for you.
-- It has been syntax-checked locally, but full runtime validation depends on having the OpenClaw image available.
+- The Bash script now checks Docker availability, waits for the container to report running, and pulls the image automatically unless `PULL_IMAGE_IF_MISSING=false`.
+- The Bash entry point has been syntax-checked locally.
+- The PowerShell version mirrors the same flow, but it was not executed in this environment because `pwsh` was not installed.
